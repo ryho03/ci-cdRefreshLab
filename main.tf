@@ -8,7 +8,7 @@ terraform {
 }
 
 provider "oci" {
-  # Configuration options
+  config_file_profile = "DEFAULT"
 }
 
 # ---- Lookups ----
