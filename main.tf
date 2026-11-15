@@ -13,6 +13,11 @@ provider "oci" {
 
 # ---- Lookups ----
 # TODO: find an availability domain
+## Get a list of Availability Domains
+data "oci_identity_availability_domains" "ads" {
+  compartment_id = var.tenancy_ocid
+}
+
 # TODO: find an Oracle Linux image
 
 # ---- Network ----
