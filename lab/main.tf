@@ -16,8 +16,15 @@ provider "oci" {
 data "oci_identity_availability_domains" "ads" {
   compartment_id = var.tenancy_ocid
 }
-
-# TODO: find an Oracle Linux image
+# TODO: find an Ubuntu Linux image
+data "oci_core_images" "ubuntu" {
+  compartment_id = var.compartment_id
+  shape = "VM.Standard.E2.1.Micro"
+  operating_system = "Canonical Ubuntu"
+  operating_system_version = "26.04"
+  sort_by = "TIMECREATED"
+  sort_order = "DESC"
+}
 
 # ---- Network ----
 # TODO: VCN
@@ -63,7 +70,7 @@ resource "oci_core_security_list" "lab_sl" {
   }
   ingress_security_rules {
     protocol = "6" # TCP
-    source = "149.13.200.0/32"
+    source = var.my_ip
     description = "Allow SSH from my home IP"
     tcp_options {
       max = 22
@@ -77,7 +84,7 @@ resource "oci_core_network_security_group_security_rule" "lab_nsg_rule" {
   description = "Allow SSH from my home IP"
   direction = "INGRESS"
   protocol = "6" # TCP
-  source = "149.13.200.0/32"
+  source = var.my_ip
   tcp_options {
     destination_port_range {
       max = 22
@@ -101,6 +108,27 @@ resource "oci_core_subnet" "lab_subnet" {
   cidr_block = "10.1.1.0/24"
   route_table_id = oci_core_route_table.lab_rt.id
   security_list_ids = [oci_core_security_list.lab_sl.id]
+  dns_label = "labsubnet"
 }
 # ---- Compute ----
 # TODO: the VM
+resource "oci_core_instance" "lab_instance_1" {
+  availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
+  compartment_id = var.compartment_id
+  display_name = "Lab Instance 1"
+  create_vnic_details {
+    subnet_id = oci_core_subnet.lab_subnet.id
+    assign_public_ip = true
+    nsg_ids = [oci_core_network_security_group.lab_nsg.id]
+    display_name = "Lab Instance 1 VNIC"
+    hostname_label = "lab-vm1"
+  }
+  shape = "VM.Standard.E2.1.Micro"
+  source_details {
+    source_type = "image"
+    source_id = data.oci_core_images.ubuntu.images[0].id
+  }
+  metadata = {
+    ssh_authorized_keys = file(var.ssh_public_key_path)
+  }
+}

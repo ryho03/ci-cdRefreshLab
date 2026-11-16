@@ -8,3 +8,13 @@ variable "compartment_id" {
     description = "OCID of the OCI lab compartment"
 }
 # TODO: path to your SSH public key
+variable "ssh_public_key_path" {
+    type = string
+    description = "Path to your SSH public key"
+}
+
+# TODO: my home IP address
+variable "my_ip" {
+    type = string
+    description = "My home IP address (for SSH access)"
+}
