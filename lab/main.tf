@@ -15,6 +15,9 @@ provider "oci" {
 locals {
   e2Micro_shapes = "VM.Standard.E2.1.Micro"
   flex_shapes    = "VM.Standard.A1.Flex"
+  instance_names = toset([
+    "lab_instance_1", "lab_instance_2_ans"
+  ])
 }
 
 # ---- Lookups ----
@@ -148,6 +151,10 @@ resource "oci_core_subnet" "lab_subnet" {
 }
 # ---- Compute ----
 # VM code
+resource "oci_core_instance" "lab_instance" {
+  for_each = local.instance_names
+}
+
 resource "oci_core_instance" "lab_instance_1" {
   availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
   compartment_id      = var.compartment_id
