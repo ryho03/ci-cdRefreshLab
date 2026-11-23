@@ -154,6 +154,7 @@ resource "oci_core_instance" "lab" {
   }
   metadata = {
     ssh_authorized_keys = file(var.ssh_public_key_path)
+    user_data           = base64encode(templatefile("${path.module}/cloud-init/${each.key}.yaml", {}))
   }
   lifecycle {
     ignore_changes = [
